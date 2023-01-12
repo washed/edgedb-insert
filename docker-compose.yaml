@@ -1,0 +1,8 @@
+services:
+  edgedb-ingest:
+    image: edgedb-ingest
+    build: .
+    environment:
+      MQTT_BROKER_URL:
+      MQTT_BROKER_USERNAME:
+      MQTT_BROKER_PASSWORD:
