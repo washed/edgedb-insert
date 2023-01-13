@@ -3,13 +3,12 @@ package models
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/edgedb/edgedb-go"
 )
 
-type ShellyTRV struct {
+type ShellyTRVDbModel struct {
 	edgedb.Optional
 	Timestamp         time.Time `edgedb:"timestamp"`
 	Device            Device    `edgedb:"device"`
@@ -19,7 +18,7 @@ type ShellyTRV struct {
 	Temperature       float32   `edgedb:"temperature"`
 }
 
-func (s ShellyTRV) Insert(ctx context.Context, client *edgedb.Client) Inserted {
+func (s ShellyTRVDbModel) Insert(ctx context.Context, client *edgedb.Client) (*Inserted, error) {
 	insertQuery := fmt.Sprintf(`
 	INSERT ShellyTRV {
 		timestamp := <datetime>$0,
@@ -42,8 +41,8 @@ func (s ShellyTRV) Insert(ctx context.Context, client *edgedb.Client) Inserted {
 		s.Temperature)
 
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
-	return inserted
+	return &inserted, nil
 }

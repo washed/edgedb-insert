@@ -5,7 +5,7 @@ import (
 )
 
 type Inserted struct {
-	id edgedb.UUID
+	Id edgedb.UUID `edgedb:"id"`
 }
 
 type Device struct {
