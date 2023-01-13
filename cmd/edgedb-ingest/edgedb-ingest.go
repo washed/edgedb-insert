@@ -57,7 +57,10 @@ func ingestShellyTRV(ctx context.Context) {
 		if err != nil {
 			log.Error().Str("DeviceName", trv.DeviceName()).Err(err).Msg("Error inserting data")
 		}
-		log.Info().Str("id", inserted.Id.String()).Msg("inserted object")
+		log.Info().
+			Str("DeviceName", trv.DeviceName()).
+			Str("id", inserted.Id.String()).
+			Msg("inserted object")
 	}
 
 	trv.SubscribeInfo(infoCallback)
