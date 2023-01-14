@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"edgedb-ingest/pkg/config"
 	"edgedb-ingest/pkg/models"
 	"os"
 	"time"
@@ -33,11 +34,8 @@ func getEdgeDbClient(ctx context.Context) *edgedb.Client {
 	return client
 }
 
-func ingestShellyTRV(ctx context.Context) {
-	dbClient := getEdgeDbClient(ctx)
-	defer dbClient.Close()
-
-	trv := shelly.NewShellyTRV("60A423DAE8DE", getMQTTOpts())
+func ingestShellyTRV(ctx context.Context, dbClient *edgedb.Client, trvId string) {
+	trv := shelly.NewShellyTRV(trvId, getMQTTOpts())
 	trv.Connect()
 	defer trv.Close()
 
@@ -45,7 +43,7 @@ func ingestShellyTRV(ctx context.Context) {
 		log.Debug().Interface("status", status).Msg("Received status")
 
 		s := models.ShellyTRVDbModel{
-			Device:            models.Device{DeviceId: "60A423DAE8DE"},
+			Device:            models.Device{DeviceId: trvId},
 			Timestamp:         time.Now().UTC(),
 			Battery:           float32(status.Bat.Value),
 			Position:          status.Thermostats[0].Pos,
@@ -77,51 +75,26 @@ func main() {
 		zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339Nano},
 	)
 
+	configFilePath := "config.yaml"
+	conf := config.Config{}
+
+	err := config.ReadConfig(configFilePath, &conf)
+	if err != nil {
+		log.Error().Err(err).Str("configFilePath", configFilePath).Msg("error reading config file")
+		os.Exit(1)
+	}
+	log.Info().
+		Interface("conf", conf).
+		Str("configFilePath", configFilePath).
+		Msg("read config file")
+
 	ctx := context.Background()
+	dbClient := getEdgeDbClient(ctx)
+	defer dbClient.Close()
 
-	/*
-
-		edgeDbDSN := os.Getenv("EDGEDB_DSN")
-		client, err := edgedb.CreateClientDSN(ctx, edgeDbDSN, edgedb.Options{})
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer client.Close()
-
-		s := models.ShellyTRV{
-			Device:            models.Device{DeviceId: "fake-test-id-trv"},
-			Timestamp:         time.Now().UTC(),
-			Battery:           47,
-			Position:          32,
-			TargetTemperature: 21,
-			Temperature:       20,
-		}
-		s.Insert(ctx, client)
-
-		query := `select ShellyTRV {
-			position,
-			temperature,
-			battery,
-			timestamp,
-			device: {
-					name,
-					device_id,
-					device_type
-				}
-			}
-			filter .device.device_id = "fake-test-id-trv"
-			limit 1;`
-
-		var result models.ShellyTRV
-		err = client.QuerySingle(ctx, query, &result)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		fmt.Printf("Got: %+v\n", result)
-	*/
-
-	go ingestShellyTRV(ctx)
+	for _, trvId := range conf.ShellyTRVIDs {
+		go ingestShellyTRV(ctx, dbClient, trvId)
+	}
 
 	for {
 		time.Sleep(time.Second * 10)

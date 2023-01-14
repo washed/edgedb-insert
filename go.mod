@@ -7,6 +7,7 @@ require (
 	github.com/edgedb/edgedb-go v0.13.4
 	github.com/rs/zerolog v1.28.0
 	github.com/washed/shelly-go v0.2.5
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
