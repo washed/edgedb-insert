@@ -23,7 +23,7 @@ type ShellyDW2DbModel struct {
 
 func (s ShellyDW2DbModel) Insert(ctx context.Context, client *edgedb.Client) (*Inserted, error) {
 	insertQuery := fmt.Sprintf(`
-	INSERT ShellyTRV {
+	INSERT ShellyDW2 {
 		timestamp := <datetime>$0,
 		device := (insert Device { device_id := "%s" } unless conflict on .device_id else (select Device)),
 		battery := <float32>$1,
