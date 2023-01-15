@@ -25,3 +25,5 @@ go.work
 
 # build output
 build/
+
+config.yaml
