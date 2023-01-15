@@ -6,7 +6,7 @@ COPY . /usr/src/app/
 
 WORKDIR /usr/src/app/
 
-RUN CGO_ENABLED=0 go build -o build/edgedb-ingest ./cmd/edgedb-ingest
+RUN GOOS=$(echo $TARGETPLATFORM | cut -d "/" -f 1) GOARCH=$(echo $TARGETPLATFORM | cut -d "/" -f 2) CGO_ENABLED=0 go build -o build/edgedb-ingest ./cmd/edgedb-ingest
 
 FROM alpine
 RUN apk --no-cache add ca-certificates

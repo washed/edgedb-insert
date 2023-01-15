@@ -1,6 +1,6 @@
 services:
   edgedb-ingest:
-    image: edgedb-ingest
+    image: mfreudenberg/edgedb-ingest:latest
     build: .
     environment:
       MQTT_BROKER_URL:
