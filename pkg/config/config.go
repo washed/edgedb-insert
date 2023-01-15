@@ -8,6 +8,7 @@ import (
 
 type Config struct {
 	ShellyTRVIDs []string `yaml:"shelly_trv_ids"`
+	ShellyDW2IDs []string `yaml:"shelly_dw2_ids"`
 }
 
 func ReadConfig(file string, config *Config) error {

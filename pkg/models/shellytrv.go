@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/edgedb/edgedb-go"
+	"github.com/rs/zerolog/log"
+	"github.com/washed/shelly-go"
 )
 
 type ShellyTRVDbModel struct {
@@ -45,4 +47,35 @@ func (s ShellyTRVDbModel) Insert(ctx context.Context, client *edgedb.Client) (*I
 	}
 
 	return &inserted, nil
+}
+
+func IngestShellyTRV(ctx context.Context, dbClient *edgedb.Client, trvId string) shelly.ShellyTRV {
+	trv := shelly.NewShellyTRV(trvId, getMQTTOpts())
+	trv.Connect()
+
+	infoCallback := func(status shelly.ShellyTRVInfo) {
+		log.Debug().Interface("status", status).Msg("Received status")
+
+		s := ShellyTRVDbModel{
+			Device:            Device{DeviceId: trvId},
+			Timestamp:         time.Now().UTC(),
+			Battery:           float32(status.Bat.Value),
+			Position:          status.Thermostats[0].Pos,
+			TargetTemperature: status.Thermostats[0].TargetT.Value,
+			Temperature:       status.Thermostats[0].Tmp.Value,
+		}
+		inserted, err := s.Insert(ctx, dbClient)
+
+		if err != nil {
+			log.Error().Str("DeviceName", trv.DeviceName()).Err(err).Msg("Error inserting data")
+		}
+		log.Info().
+			Str("DeviceName", trv.DeviceName()).
+			Str("id", inserted.Id.String()).
+			Msg("inserted object")
+	}
+
+	go trv.SubscribeInfo(infoCallback)
+
+	return trv
 }
