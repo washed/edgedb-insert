@@ -58,10 +58,9 @@ func getEdgeDbClient(ctx context.Context) *edgedb.Client {
 	return client
 }
 
-func ingestShellyTRV(ctx context.Context, dbClient *edgedb.Client, trvId string) {
+func ingestShellyTRV(ctx context.Context, dbClient *edgedb.Client, trvId string) shelly.ShellyTRV {
 	trv := shelly.NewShellyTRV(trvId, getMQTTOpts())
 	trv.Connect()
-	defer trv.Close()
 
 	infoCallback := func(status shelly.ShellyTRVInfo) {
 		log.Debug().Interface("status", status).Msg("Received status")
@@ -85,7 +84,9 @@ func ingestShellyTRV(ctx context.Context, dbClient *edgedb.Client, trvId string)
 			Msg("inserted object")
 	}
 
-	trv.SubscribeInfo(infoCallback)
+	go trv.SubscribeInfo(infoCallback)
+
+	return trv
 }
 
 func main() {
@@ -113,7 +114,8 @@ func main() {
 	defer dbClient.Close()
 
 	for _, trvId := range conf.ShellyTRVIDs {
-		go ingestShellyTRV(ctx, dbClient, trvId)
+		trv := ingestShellyTRV(ctx, dbClient, trvId)
+		defer trv.Close()
 	}
 
 	sig := make(chan os.Signal, 1)
