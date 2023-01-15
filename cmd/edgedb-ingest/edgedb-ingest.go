@@ -5,7 +5,10 @@ import (
 	"edgedb-ingest/pkg/config"
 	"edgedb-ingest/pkg/models"
 	"os"
+	"syscall"
 	"time"
+
+	"os/signal"
 
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 	"github.com/edgedb/edgedb-go"
@@ -83,10 +86,6 @@ func ingestShellyTRV(ctx context.Context, dbClient *edgedb.Client, trvId string)
 	}
 
 	trv.SubscribeInfo(infoCallback)
-
-	for {
-		time.Sleep(time.Second * 10)
-	}
 }
 
 func main() {
@@ -117,7 +116,10 @@ func main() {
 		go ingestShellyTRV(ctx, dbClient, trvId)
 	}
 
-	for {
-		time.Sleep(time.Second * 10)
-	}
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt)
+	signal.Notify(sig, syscall.SIGTERM)
+
+	<-sig
+	log.Info().Msg("Exiting")
 }
