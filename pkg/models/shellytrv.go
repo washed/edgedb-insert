@@ -20,7 +20,7 @@ type ShellyTRVDbModel struct {
 	Temperature       float32   `edgedb:"temperature"`
 }
 
-func (s ShellyTRVDbModel) Insert(ctx context.Context, client *edgedb.Client) (*Inserted, error) {
+func (s ShellyTRVDbModel) Insert(client *edgedb.Client) (*Inserted, error) {
 	insertQuery := fmt.Sprintf(`
 	INSERT ShellyTRV {
 		timestamp := <datetime>$0,
@@ -32,6 +32,7 @@ func (s ShellyTRVDbModel) Insert(ctx context.Context, client *edgedb.Client) (*I
 	}`, s.Device.DeviceId)
 
 	var inserted Inserted
+	ctx := context.Background()
 	err := client.QuerySingle(
 		ctx,
 		insertQuery,
@@ -49,7 +50,7 @@ func (s ShellyTRVDbModel) Insert(ctx context.Context, client *edgedb.Client) (*I
 	return &inserted, nil
 }
 
-func IngestShellyTRV(ctx context.Context, dbClient *edgedb.Client, trvId string) shelly.ShellyTRV {
+func IngestShellyTRV(dbClient *edgedb.Client, trvId string) shelly.ShellyTRV {
 	trv := shelly.NewShellyTRV(trvId, getMQTTOpts())
 	trv.Connect()
 
@@ -64,7 +65,7 @@ func IngestShellyTRV(ctx context.Context, dbClient *edgedb.Client, trvId string)
 			TargetTemperature: status.Thermostats[0].TargetT.Value,
 			Temperature:       status.Thermostats[0].Tmp.Value,
 		}
-		inserted, err := s.Insert(ctx, dbClient)
+		inserted, err := s.Insert(dbClient)
 
 		if err != nil {
 			log.Error().Str("DeviceName", trv.DeviceName()).Err(err).Msg("Error inserting data")

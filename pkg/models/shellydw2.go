@@ -21,7 +21,7 @@ type ShellyDW2DbModel struct {
 	Tilt        int16     `edgedb:"tilt"`
 }
 
-func (s ShellyDW2DbModel) Insert(ctx context.Context, client *edgedb.Client) (*Inserted, error) {
+func (s ShellyDW2DbModel) Insert(client *edgedb.Client) (*Inserted, error) {
 	insertQuery := fmt.Sprintf(`
 	INSERT ShellyDW2 {
 		timestamp := <datetime>$0,
@@ -34,6 +34,7 @@ func (s ShellyDW2DbModel) Insert(ctx context.Context, client *edgedb.Client) (*I
 	}`, s.Device.DeviceId)
 
 	var inserted Inserted
+	ctx := context.Background()
 	err := client.QuerySingle(
 		ctx,
 		insertQuery,
@@ -52,7 +53,7 @@ func (s ShellyDW2DbModel) Insert(ctx context.Context, client *edgedb.Client) (*I
 	return &inserted, nil
 }
 
-func IngestShellyDW2(ctx context.Context, dbClient *edgedb.Client, dw2Id string) shelly.ShellyDW2 {
+func IngestShellyDW2(dbClient *edgedb.Client, dw2Id string) shelly.ShellyDW2 {
 	dw2 := shelly.NewShellyDW2(dw2Id, getMQTTOpts())
 	dw2.Connect()
 
@@ -68,7 +69,7 @@ func IngestShellyDW2(ctx context.Context, dbClient *edgedb.Client, dw2Id string)
 			Temperature: info.Tmp.Value,
 			Tilt:        int16(info.Accel.Tilt)}
 
-		inserted, err := s.Insert(ctx, dbClient)
+		inserted, err := s.Insert(dbClient)
 
 		if err != nil {
 			log.Error().Str("DeviceName", dw2.DeviceName()).Err(err).Msg("Error inserting data")

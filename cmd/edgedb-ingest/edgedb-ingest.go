@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"edgedb-ingest/pkg/config"
 	"edgedb-ingest/pkg/models"
 	"os"
@@ -16,9 +15,9 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func getEdgeDbClient(ctx context.Context) *edgedb.Client {
+func getEdgeDbClient() *edgedb.Client {
 	edgeDbDSN := os.Getenv("EDGEDB_DSN")
-	client, err := edgedb.CreateClientDSN(ctx, edgeDbDSN, edgedb.Options{})
+	client, err := edgedb.CreateClientDSN(nil, edgeDbDSN, edgedb.Options{})
 	if err != nil {
 		log.Error().Err(err).Msg("Error connecting to EdgeDB")
 	}
@@ -46,17 +45,16 @@ func main() {
 		Str("configFilePath", configFilePath).
 		Msg("read config file")
 
-	ctx := context.Background()
-	dbClient := getEdgeDbClient(ctx)
+	dbClient := getEdgeDbClient()
 	defer dbClient.Close()
 
 	for _, trvId := range conf.ShellyTRVIDs {
-		trv := models.IngestShellyTRV(ctx, dbClient, trvId)
+		trv := models.IngestShellyTRV(dbClient, trvId)
 		defer trv.Close()
 	}
 
 	for _, dw2Id := range conf.ShellyDW2IDs {
-		dw2 := models.IngestShellyDW2(ctx, dbClient, dw2Id)
+		dw2 := models.IngestShellyDW2(dbClient, dw2Id)
 		defer dw2.Close()
 	}
 
