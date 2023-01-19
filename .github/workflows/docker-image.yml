@@ -25,12 +25,14 @@ jobs:
           linux/amd64
           linux/arm64
 
+    - run: echo "IMAGE_TAG=$(git describe --tags --always)" >> $GITHUB_ENV
+
     - name: Build and push
       uses: docker/build-push-action@v3
       with:
         push: true
         tags: |
-          mfreudenberg/edgedb-ingest:${{ github.ref_name }}
+          mfreudenberg/edgedb-ingest:${{ env.IMAGE_TAG }}
           mfreudenberg/edgedb-ingest:latest
         platforms: |
           linux/amd64
