@@ -25,15 +25,35 @@ jobs:
           linux/amd64
           linux/arm64
 
-    - run: echo "IMAGE_TAG=$(git describe --tags --always)" >> $GITHUB_ENV
+    - run: echo "FULL_IMAGE_TAG=$(git describe --tags --always)" >> $GITHUB_ENV
+
+    - run: echo "IS_SAMVER_TAG=$(echo ${{ env.FULL_IMAGE_TAG }} | grep '^v[0-9]*\.[0-9]*\.[0-9]*$' -c)" >> $GITHUB_ENV
+
+    - name: Create semver image tags
+      if:  ${{ env.IS_SAMVER_TAG == 1 }}
+      run: |
+        echo "MAJOR_IMAGE_TAG=$(echo ${{ env.FULL_IMAGE_TAG }} | cut -d . -f 1)" >> $GITHUB_ENV
+        echo "MINOR_IMAGE_TAG=$(echo ${{ env.FULL_IMAGE_TAG }} | cut -d . -f 1,2)" >> $GITHUB_ENV
 
     - name: Build and push
       uses: docker/build-push-action@v3
       with:
         push: true
         tags: |
-          mfreudenberg/edgedb-ingest:${{ env.IMAGE_TAG }}
           mfreudenberg/edgedb-ingest:latest
+          mfreudenberg/edgedb-ingest:${{ env.FULL_IMAGE_TAG }}
+        platforms: |
+          linux/amd64
+          linux/arm64
+
+    - name: Build and push additional semver images
+      uses: docker/build-push-action@v3
+      if:  ${{ env.IS_SAMVER_TAG == 1 }}
+      with:
+        push: true
+        tags: |
+          mfreudenberg/edgedb-ingest:${{ env.MAJOR_IMAGE_TAG }}
+          mfreudenberg/edgedb-ingest:${{ env.MINOR_IMAGE_TAG }}
         platforms: |
           linux/amd64
           linux/arm64
