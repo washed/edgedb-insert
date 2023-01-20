@@ -33,6 +33,7 @@ func (s ShellyTRVDbModel) Insert(client *edgedb.Client) (*Inserted, error) {
 
 	var inserted Inserted
 	ctx := context.Background()
+	log.Debug().Interface("ctx", ctx).Msg("before insert")
 	err := client.QuerySingle(
 		ctx,
 		insertQuery,
@@ -42,6 +43,7 @@ func (s ShellyTRVDbModel) Insert(client *edgedb.Client) (*Inserted, error) {
 		s.Position,
 		s.TargetTemperature,
 		s.Temperature)
+	log.Debug().Interface("ctx", ctx).Msg("after insert")
 
 	if err != nil {
 		return nil, err
