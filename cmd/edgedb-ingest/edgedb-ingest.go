@@ -20,6 +20,7 @@ func getEdgeDbClient() *edgedb.Client {
 	client, err := edgedb.CreateClientDSN(nil, edgeDbDSN, edgedb.Options{})
 	if err != nil {
 		log.Error().Err(err).Msg("Error connecting to EdgeDB")
+		os.Exit(1)
 	}
 
 	return client
