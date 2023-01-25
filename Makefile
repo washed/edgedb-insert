@@ -2,8 +2,8 @@
 build:
 	-docker buildx create --name edgedb-ingest-builder --driver docker-container --bootstrap --platform linux/amd64,linux/arm64
 	docker buildx use edgedb-ingest-builder
-	docker buildx build --platform linux/amd64,linux/arm64 -t mfreudenberg/edgedb-ingest:latest --push .
-	docker buildx build -t edgedb-ingest --load .
+	docker buildx build --platform linux/amd64,linux/arm64 -t ghcr.io/washed/edgedb-ingest:latest --push .
+	docker buildx build -t ghcr.io/washed/edgedb-ingest:latest --load .
 
 .PHONY: build-local
 build-local:
