@@ -39,6 +39,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           push: true
           tags: |
             ghcr.io/washed/edgedb-ingest:latest
@@ -51,6 +52,7 @@ jobs:
         uses: docker/build-push-action@v3
         if: ${{ env.IS_SAMVER_TAG == 1 }}
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           push: true
           tags: |
             ghcr.io/washed/edgedb-ingest:${{ env.MAJOR_IMAGE_TAG }}
