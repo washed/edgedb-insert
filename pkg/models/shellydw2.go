@@ -34,7 +34,8 @@ func (s ShellyDW2DbModel) Insert(client *edgedb.Client) (*Inserted, error) {
 	}`, s.Device.DeviceId)
 
 	var inserted Inserted
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
 	err := client.QuerySingle(
 		ctx,
 		insertQuery,
