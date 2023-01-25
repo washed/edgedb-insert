@@ -63,9 +63,6 @@ func main() {
 	for _, trvId := range conf.ShellyTRVIDs {
 		trv := models.IngestShellyTRV(dbClient, trvId)
 		defer trv.Close()
-
-		trvFake := models.IngestShellyTRVFake(dbClient, trvId)
-		defer trvFake.Close()
 	}
 
 	for _, dw2Id := range conf.ShellyDW2IDs {
