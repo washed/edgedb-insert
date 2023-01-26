@@ -46,6 +46,24 @@ func main() {
 		Str("configFilePath", configFilePath).
 		Msg("read config file")
 
+	if conf.LogLevel == "" {
+		conf.LogLevel = "info"
+		log.Error().
+			Str("conf.LogLevel", conf.LogLevel).
+			Msg("using default log level")
+	}
+
+	logLevel, err := zerolog.ParseLevel(conf.LogLevel)
+	if err != nil {
+		log.Error().Str("conf.LogLevel", conf.LogLevel).Err(err).Msg("error configuring log level")
+		os.Exit(1)
+	}
+	zerolog.SetGlobalLevel(logLevel)
+	log.Error().
+		Str("conf.LogLevel", conf.LogLevel).
+		Int("logLevel", int(logLevel)).
+		Msg("set log level")
+
 	dbClient := getEdgeDbClient()
 	defer dbClient.Close()
 

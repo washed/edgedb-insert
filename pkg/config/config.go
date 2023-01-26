@@ -7,6 +7,7 @@ import (
 )
 
 type Config struct {
+	LogLevel     string   `yaml:"log_level"`
 	ShellyTRVIDs []string `yaml:"shelly_trv_ids"`
 	ShellyDW2IDs []string `yaml:"shelly_dw2_ids"`
 }
