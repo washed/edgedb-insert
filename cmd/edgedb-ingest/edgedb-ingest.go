@@ -26,15 +26,6 @@ func getEdgeDbClient() *edgedb.Client {
 	return client
 }
 
-func heartbeat() {
-	heartbeatCounter := 0
-	for {
-		log.Debug().Int("heartbeatCounter", heartbeatCounter).Msg("heartbeat")
-		heartbeatCounter++
-		time.Sleep(time.Second)
-	}
-}
-
 func main() {
 	zerolog.TimeFieldFormat = time.RFC3339Nano
 	zerolog.SetGlobalLevel(zerolog.TraceLevel)
@@ -57,8 +48,6 @@ func main() {
 
 	dbClient := getEdgeDbClient()
 	defer dbClient.Close()
-
-	go heartbeat()
 
 	for _, trvId := range conf.ShellyTRVIDs {
 		trv := models.IngestShellyTRV(dbClient, trvId)
