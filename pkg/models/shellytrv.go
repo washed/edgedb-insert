@@ -31,6 +31,16 @@ func (s ShellyTRVDbModel) Insert(client *edgedb.Client) (*Inserted, error) {
 		temperature := <float32>$4
 	}`, s.Device.DeviceId)
 
+	log.Trace().
+		Str("DeviceId", s.Device.DeviceId).
+		Str("insertQuery", insertQuery).
+		Time("s.Timestamp", s.Timestamp).
+		Float32("s.Battery", s.Battery).
+		Float32("s.Position", s.Position).
+		Float32("s.TargetTemperature", s.TargetTemperature).
+		Float32("s.Temperature", s.Temperature).
+		Msg("insertQuery")
+
 	var inserted Inserted
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()

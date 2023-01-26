@@ -33,6 +33,17 @@ func (s ShellyDW2DbModel) Insert(client *edgedb.Client) (*Inserted, error) {
 		tilt := <int16>$5
 	}`, s.Device.DeviceId)
 
+	log.Trace().
+		Str("DeviceId", s.Device.DeviceId).
+		Str("insertQuery", insertQuery).
+		Time("s.Timestamp", s.Timestamp).
+		Float32("s.Battery", s.Battery).
+		Float32("s.Lux", s.Lux).
+		Bool("s.Open", s.Open).
+		Float32("s.Temperature", s.Temperature).
+		Int16("s.Tilt", s.Tilt).
+		Msg("insertQuery")
+
 	var inserted Inserted
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
