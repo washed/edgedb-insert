@@ -70,6 +70,7 @@ func IngestShellyTRV(dbClient *edgedb.Client, trvId string) shelly.ShellyTRV {
 
 		if err != nil {
 			log.Error().Str("DeviceName", trv.DeviceName()).Err(err).Msg("Error inserting data")
+			return
 		}
 		log.Info().
 			Str("DeviceName", trv.DeviceName()).

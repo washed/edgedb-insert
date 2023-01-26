@@ -74,6 +74,7 @@ func IngestShellyDW2(dbClient *edgedb.Client, dw2Id string) shelly.ShellyDW2 {
 
 		if err != nil {
 			log.Error().Str("DeviceName", dw2.DeviceName()).Err(err).Msg("Error inserting data")
+			return
 		}
 		log.Info().
 			Str("DeviceName", dw2.DeviceName()).
