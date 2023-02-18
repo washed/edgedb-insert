@@ -5,14 +5,14 @@ import (
 	"edgedb-ingest/pkg/models"
 	"os"
 	"syscall"
-	"time"
 
 	"os/signal"
 
 	"github.com/edgedb/edgedb-go"
 
-	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+
+	ks "github.com/washed/kitchen-sink-go"
 )
 
 func getEdgeDbClient() *edgedb.Client {
@@ -27,52 +27,19 @@ func getEdgeDbClient() *edgedb.Client {
 }
 
 func main() {
-	zerolog.TimeFieldFormat = time.RFC3339Nano
-	zerolog.SetGlobalLevel(zerolog.TraceLevel)
-	log.Logger = log.Output(
-		zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339Nano},
-	)
-
-	configFilePath := "config.yaml"
-	conf := config.Config{}
-
-	err := config.ReadConfig(configFilePath, &conf)
-	if err != nil {
-		log.Error().Err(err).Str("configFilePath", configFilePath).Msg("error reading config file")
-		os.Exit(1)
-	}
-	log.Info().
-		Interface("conf", conf).
-		Str("configFilePath", configFilePath).
-		Msg("read config file")
-
-	if conf.LogLevel == "" {
-		conf.LogLevel = "info"
-		log.Error().
-			Str("conf.LogLevel", conf.LogLevel).
-			Msg("using default log level")
-	}
-
-	logLevel, err := zerolog.ParseLevel(conf.LogLevel)
-	if err != nil {
-		log.Error().Str("conf.LogLevel", conf.LogLevel).Err(err).Msg("error configuring log level")
-		os.Exit(1)
-	}
-	zerolog.SetGlobalLevel(logLevel)
-	log.Error().
-		Str("conf.LogLevel", conf.LogLevel).
-		Int("logLevel", int(logLevel)).
-		Msg("set log level")
+	config := config.Config{}
+	ks.ReadConfig(&config)
+	ks.InitLogger(config.Log)
 
 	dbClient := getEdgeDbClient()
 	defer dbClient.Close()
 
-	for _, trvId := range conf.ShellyTRVIDs {
+	for _, trvId := range config.ShellyTRVIDs {
 		trv := models.IngestShellyTRV(dbClient, trvId)
 		defer trv.Close()
 	}
 
-	for _, dw2Id := range conf.ShellyDW2IDs {
+	for _, dw2Id := range config.ShellyDW2IDs {
 		dw2 := models.IngestShellyDW2(dbClient, dw2Id)
 		defer dw2.Close()
 	}
